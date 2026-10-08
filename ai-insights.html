@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FinMate AI - AI Insights</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="dashboard">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+        <div class="logo">
+            <h2>FinMate <span>AI</span></h2>
+            <p>Personal Finance Assistant</p>
+        </div>
+
+        <nav>
+            <a href="index.html">🏠 Dashboard</a>
+            <a href="transactions.html">💰 Income & Expenses</a>
+            <a href="budget.html">📊 Budget</a>
+            <a href="ai-insights.html" class="active">🤖 AI Insights</a>
+            <a href="reports.html">📈 Reports</a>
+        </nav>
+
+    </aside>
+
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <!-- Top Bar -->
+        <div class="topbar">
+
+            <div>
+                <h1>AI Insights</h1>
+                <p>Smart analysis of your spending habits.</p>
+            </div>
+
+            <div class="profile">
+                <div class="profile-circle">U</div>
+                <span>User</span>
+            </div>
+
+        </div>
+
+
+        <!-- AI Header -->
+        <section class="ai-insight-main">
+
+            <div class="ai-big-icon">✦</div>
+
+            <div>
+                <span class="ai-label">FINMATE AI ANALYSIS</span>
+
+                <h2 id="financialHealth">
+                    Analyzing your financial data...
+                </h2>
+
+                <p id="aiSummary">
+                    Your transactions are being analyzed to identify
+                    spending patterns and possible savings opportunities.
+                </p>
+            </div>
+
+        </section>
+
+
+        <!-- Analysis Cards -->
+        <section class="ai-analysis-grid">
+
+            <div class="ai-analysis-card">
+                <span class="analysis-icon">💰</span>
+                <span class="analysis-label">TOTAL INCOME</span>
+                <h2 id="aiIncome">₹0</h2>
+            </div>
+
+            <div class="ai-analysis-card">
+                <span class="analysis-icon">💸</span>
+                <span class="analysis-label">TOTAL EXPENSES</span>
+                <h2 id="aiExpenses">₹0</h2>
+            </div>
+
+            <div class="ai-analysis-card">
+                <span class="analysis-icon">📊</span>
+                <span class="analysis-label">SAVING RATE</span>
+                <h2 id="aiSavingRate">0%</h2>
+            </div>
+
+        </section>
+
+
+        <!-- Recommendations -->
+        <section class="recommendations-card">
+
+            <div class="box-heading">
+                <div>
+                    <span class="label">PERSONALIZED</span>
+                    <h2>AI Recommendations</h2>
+                </div>
+            </div>
+
+            <div id="recommendations"></div>
+
+        </section>
+
+
+        <!-- Spending Categories -->
+        <section class="category-card">
+
+            <div class="box-heading">
+                <div>
+                    <span class="label">SPENDING ANALYSIS</span>
+                    <h2>Category Breakdown</h2>
+                </div>
+            </div>
+
+            <div id="categoryBreakdown">
+                <p class="empty-message">
+                    Loading spending data...
+                </p>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<script>
+
+async function loadAIInsights() {
+
+    const user = JSON.parse(localStorage.getItem("loggedInUser"));
+
+    if (!user) {
+        document.getElementById("financialHealth").textContent =
+            "Please login first.";
+
+        return;
+    }
+
+    try {
+
+        // Get income from backend
+        const incomeResponse = await fetch(
+            `http://127.0.0.1:5000/api/income/${user.user_id}`
+        );
+
+        // Get expenses from backend
+        const expenseResponse = await fetch(
+            `http://127.0.0.1:5000/api/expenses/${user.user_id}`
+        );
+
+        const incomeData = await incomeResponse.json();
+        const expenseData = await expenseResponse.json();
+
+
+        // ==============================
+        // CALCULATE TOTALS
+        // ==============================
+
+        let totalIncome = 0;
+        let totalExpenses = 0;
+
+        incomeData.income.forEach(function(item) {
+            totalIncome += Number(item.amount);
+        });
+
+        expenseData.expenses.forEach(function(item) {
+            totalExpenses += Number(item.amount);
+        });
+
+
+        const savings = totalIncome - totalExpenses;
+
+        let savingRate = 0;
+
+        if (totalIncome > 0) {
+            savingRate = (savings / totalIncome) * 100;
+        }
+
+
+        // ==============================
+        // DISPLAY TOTALS
+        // ==============================
+
+        document.getElementById("aiIncome").textContent =
+            "₹" + totalIncome.toLocaleString("en-IN");
+
+        document.getElementById("aiExpenses").textContent =
+            "₹" + totalExpenses.toLocaleString("en-IN");
+
+        document.getElementById("aiSavingRate").textContent =
+            savingRate.toFixed(1) + "%";
+
+
+        // ==============================
+        // AI FINANCIAL HEALTH
+        // ==============================
+
+        const health = document.getElementById("financialHealth");
+        const summary = document.getElementById("aiSummary");
+
+
+        if (totalIncome === 0) {
+
+            health.textContent =
+                "Add income to start AI analysis.";
+
+            summary.textContent =
+                "FinMate AI needs income and expense data to analyze your financial habits.";
+
+        }
+
+        else if (savingRate >= 30) {
+
+            health.textContent =
+                "Your saving pattern looks strong.";
+
+            summary.textContent =
+                "You are currently saving a healthy portion of your recorded income. Keep monitoring your expenses.";
+
+        }
+
+        else if (savingRate >= 20) {
+
+            health.textContent =
+                "Your financial pattern looks healthy.";
+
+            summary.textContent =
+                "You are maintaining a reasonable saving rate. Continue tracking your expenses.";
+
+        }
+
+        else if (savingRate >= 0) {
+
+            health.textContent =
+                "Your expenses need attention.";
+
+            summary.textContent =
+                "Your current saving rate is low. Consider reducing unnecessary expenses.";
+
+        }
+
+        else {
+
+            health.textContent =
+                "Your expenses are higher than your income.";
+
+            summary.textContent =
+                "FinMate AI recommends reviewing your spending and reducing unnecessary expenses.";
+
+        }
+
+
+        // ==============================
+        // AI RECOMMENDATIONS
+        // ==============================
+
+        const recommendationBox =
+            document.getElementById("recommendations");
+
+        recommendationBox.innerHTML = "";
+
+
+        if (savingRate >= 20) {
+
+            recommendationBox.innerHTML += `
+                <div class="recommendation">
+                    <span class="recommendation-icon">✨</span>
+                    <div>
+                        <strong>Good saving progress</strong>
+                        <p>Your current saving rate is above 20%. Continue tracking your expenses to maintain this habit.</p>
+                    </div>
+                </div>
+            `;
+
+        }
+        else {
+
+            recommendationBox.innerHTML += `
+                <div class="recommendation">
+                    <span class="recommendation-icon">⚠️</span>
+                    <div>
+                        <strong>Improve your saving rate</strong>
+                        <p>Try reducing unnecessary spending and set a monthly savings target.</p>
+                    </div>
+                </div>
+            `;
+
+        }
+
+
+        if (totalExpenses > 0) {
+
+            recommendationBox.innerHTML += `
+                <div class="recommendation">
+                    <span class="recommendation-icon">📊</span>
+                    <div>
+                        <strong>Keep tracking your expenses</strong>
+                        <p>Regular expense tracking helps FinMate AI understand your spending pattern.</p>
+                    </div>
+                </div>
+            `;
+
+        }
+
+
+        // ==============================
+        // CATEGORY BREAKDOWN
+        // ==============================
+
+        const categoryNames = {
+
+            1: "Salary",
+            2: "Business",
+            3: "Other Income",
+
+            4: "Food",
+            5: "Shopping",
+            6: "Transport",
+            7: "Bills",
+            8: "Entertainment",
+            9: "Health",
+            10: "Education",
+            11: "Other Expense"
+
+        };
+
+
+        const categories = {};
+
+
+        expenseData.expenses.forEach(function(item) {
+
+            const category =
+                categoryNames[item.category_id] || "Other Expense";
+
+            if (!categories[category]) {
+                categories[category] = 0;
+            }
+
+            categories[category] += Number(item.amount);
+
+        });
+
+
+        const categoryBox =
+            document.getElementById("categoryBreakdown");
+
+        categoryBox.innerHTML = "";
+
+
+        const categoryList =
+            Object.entries(categories);
+
+
+        if (categoryList.length === 0) {
+
+            categoryBox.innerHTML = `
+                <p class="empty-message">
+                    No expenses recorded yet.
+                </p>
+            `;
+
+        }
+        else {
+
+            categoryList
+                .sort(function(a, b) {
+                    return b[1] - a[1];
+                })
+                .forEach(function(item) {
+
+                    const categoryName = item[0];
+                    const amount = item[1];
+
+                    categoryBox.innerHTML += `
+                        <div class="recommendation">
+                            <span class="recommendation-icon">📊</span>
+
+                            <div>
+                                <strong>${categoryName}</strong>
+
+                                <p>
+                                    You have spent
+                                    ₹${amount.toLocaleString("en-IN")}
+                                    on ${categoryName}.
+                                </p>
+                            </div>
+                        </div>
+                    `;
+
+                });
+
+        }
+
+
+    }
+    catch (error) {
+
+        console.error("AI Insights error:", error);
+
+        document.getElementById("financialHealth").textContent =
+            "Unable to load AI insights.";
+
+        document.getElementById("aiSummary").textContent =
+            "Please make sure the Flask backend is running.";
+
+    }
+
+}
+
+
+// Start AI analysis
+loadAIInsights();
+
+</script>
+
+</body>
+</html>

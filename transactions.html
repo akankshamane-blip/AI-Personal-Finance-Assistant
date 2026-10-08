@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinMate AI - Transactions</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <div class="dashboard">
+
+        <!-- Sidebar -->
+        <aside class="sidebar">
+
+            <div class="logo">
+                <h2>FinMate <span>AI</span></h2>
+                <p>Personal Finance Assistant</p>
+            </div>
+
+            <nav>
+                <a href="index.html">🏠 Dashboard</a>
+                <a href="transactions.html" class="active">💰 Income & Expenses</a>
+                <a href="#">📊 Budget</a>
+                <a href="#">🤖 AI Insights</a>
+                <a href="#">📈 Reports</a>
+            </nav>
+
+        </aside>
+
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Top Bar -->
+            <div class="topbar">
+                <div>
+                    <h1>Income & Expenses</h1>
+                    <p>Add and manage your financial transactions.</p>
+                </div>
+
+                <div class="profile">
+                    <div class="profile-circle">U</div>
+                    <span>User</span>
+                </div>
+            </div>
+
+
+            <!-- Add Transaction Card -->
+            <section class="transaction-form-card">
+
+                <h2>Add New Transaction</h2>
+                <p class="section-subtitle">
+                    Enter your income or expense details below.
+                </p>
+
+                <form id="transactionForm">
+
+                    <div class="form-row">
+
+                        <div class="form-group">
+                            <label>Transaction Type</label>
+
+                            <select id="type" required>
+                                <option value="">Select Type</option>
+                                <option value="Income">Income</option>
+                                <option value="Expense">Expense</option>
+                            </select>
+                        </div>
+
+
+                        <div class="form-group">
+                            <label>Category</label>
+
+                            <select id="category" required>
+                                <option value="">Select Category</option>
+                                <option>Salary</option>
+                                <option>Scholarship</option>
+                                <option>Freelancing</option>
+                                <option>Food</option>
+                                <option>Shopping</option>
+                                <option>Travel</option>
+                                <option>Education</option>
+                                <option>Bills</option>
+                                <option>Entertainment</option>
+                                <option>Other</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-row">
+
+                        <div class="form-group">
+                            <label>Amount (₹)</label>
+
+                            <input
+                                type="number"
+                                id="amount"
+                                placeholder="Enter amount"
+                                min="1"
+                                required
+                            >
+                        </div>
+
+
+                        <div class="form-group">
+                            <label>Date</label>
+
+                            <input
+                                type="date"
+                                id="date"
+                                required
+                            >
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+                        <label>Description</label>
+
+                        <input
+                            type="text"
+                            id="description"
+                            placeholder="Example: Monthly salary / Grocery shopping"
+                        >
+                    </div>
+
+
+                    <button type="submit" class="add-transaction-btn">
+                        + Add Transaction
+                    </button>
+
+                </form>
+
+            </section>
+
+
+            <!-- Transaction List -->
+            <section class="transactions-card">
+
+                <div class="section-header">
+                    <div>
+                        <h2>Recent Transactions</h2>
+                        <p>Track your income and spending.</p>
+                    </div>
+                </div>
+
+
+                <div class="table-container">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Category</th>
+                                <th>Amount</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="transactionTable">
+
+                            <tr>
+                                <td>30 Sep 2026</td>
+
+                                <td>
+                                    <span class="income-badge">
+                                        Income
+                                    </span>
+                                </td>
+
+                                <td>Salary</td>
+
+                                <td class="income-amount">
+                                    + ₹25,000
+                                </td>
+
+                                <td>Monthly income</td>
+                            </tr>
+
+
+                            <tr>
+                                <td>29 Sep 2026</td>
+
+                                <td>
+                                    <span class="expense-badge">
+                                        Expense
+                                    </span>
+                                </td>
+
+                                <td>Food</td>
+
+                                <td class="expense-amount">
+                                    - ₹500
+                                </td>
+
+                                <td>Lunch</td>
+                            </tr>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </section>
+
+        </main>
+
+    </div>
+
+
+    <script src="script.js"></script>
+
+</body>
+</html>
