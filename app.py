@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+import os, from flask import Flask, jsonify, request
 from flask_cors import CORS
 import mysql.connector
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -14,7 +14,7 @@ def get_db_connection():
     connection = mysql.connector.connect(
         host="localhost",
         user="root",
-        password="***REMOVED***",
+        password=os.getenv("DB_PASSWORD"),
         database="finmate_db"
     )
     return connection
