@@ -1,4 +1,5 @@
-import os, from flask import Flask, jsonify, request
+import os
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 import mysql.connector
 from werkzeug.security import generate_password_hash, check_password_hash
