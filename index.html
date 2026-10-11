@@ -26,61 +26,36 @@
                 </div>
             </div>
 
-            <a href="index.html" class="active">
-    <span>⌂</span>
-    Dashboard
-</a>
-
-<a href="transactions.html">
-    <span>↗</span>
-    Income & Expenses
-</a>
-
-<a href="budget.html">
-    <span>◫</span>
-    Budget
-</a>
-
-<a href="ai-insights.html">
-    <span>✦</span>
-    AI Insights
-</a>
-
-<a href="reports.html">
-    <span>▤</span>
-    Reports
-</a>
-
-                <a href="#" class="active">
+            <nav class="menu">
+                <a href="index.html" class="active">
                     <span>⌂</span>
                     Dashboard
                 </a>
 
-                <a href="#">
+                <a href="transactions.html">
                     <span>↗</span>
-                    Income
+                    Income & Expenses
                 </a>
 
-                <a href="#">
-                    <span>↘</span>
-                    Expenses
-                </a>
-
-                <a href="#">
+                <a href="budget.html">
                     <span>◫</span>
                     Budget
                 </a>
 
-                <a href="#">
+                <a href="ai-insights.html">
                     <span>✦</span>
                     AI Insights
                 </a>
 
-                <a href="#">
+                <a href="reports.html">
                     <span>▤</span>
                     Reports
                 </a>
 
+                <a href="login.html" id="logoutBtn" style="margin-top: 15px; color: #ff8585;">
+                    <span>🚪</span>
+                    Logout
+                </a>
             </nav>
 
             <div class="sidebar-bottom">
@@ -98,16 +73,16 @@
             <header class="topbar">
 
                 <div>
-                    <p class="small-text">Good evening 👋</p>
-                    <h1>Welcome back, Akanksha</h1>
+                    <p class="small-text">FinMate AI Dashboard 👋</p>
+                    <h1 id="welcomeGreeting">Welcome back, User</h1>
                 </div>
 
                 <div class="profile">
-                    <div class="profile-circle">A</div>
+                    <div class="profile-circle" id="profileAvatar">U</div>
 
                     <div>
-                        <strong>Akanksha</strong>
-                        <span>Student</span>
+                        <strong id="profileName">User</strong>
+                        <span id="profileEmail">finance@finmate.ai</span>
                     </div>
                 </div>
 
@@ -123,8 +98,8 @@
                         <h2>Financial Summary</h2>
                     </div>
 
-                    <button class="month-btn">
-                        September 2026 ▾
+                    <button class="month-btn" id="currentPeriodBtn">
+                        Current Month
                     </button>
                 </div>
 
@@ -136,15 +111,15 @@
 
                         <div class="card-top">
                             <span class="card-icon">↗</span>
-                            <span class="percentage">+8.4%</span>
+                            <span class="percentage">Income</span>
                         </div>
 
                         <p>Total Income</p>
 
-                        <h3 id="totalIncome">₹25,000</h3>
+                        <h3 id="totalIncome">₹0</h3>
 
                         <span class="card-note">
-                            Compared to last month
+                            Recorded total earnings
                         </span>
 
                     </div>
@@ -154,15 +129,15 @@
 
                         <div class="card-top">
                             <span class="card-icon">↘</span>
-                            <span class="percentage">-3.2%</span>
+                            <span class="percentage">Expenses</span>
                         </div>
 
                         <p>Total Expenses</p>
 
-                       <h3 id="totalExpenses">₹12,500</h3>
+                        <h3 id="totalExpenses">₹0</h3>
 
                         <span class="card-note">
-                            Compared to last month
+                            Recorded total spending
                         </span>
 
                     </div>
@@ -172,15 +147,15 @@
 
                         <div class="card-top">
                             <span class="card-icon">✦</span>
-                            <span class="percentage">+12%</span>
+                            <span class="percentage" id="savingRateTag">0% saved</span>
                         </div>
 
                         <p>Total Savings</p>
 
-                        <h3 id="totalSavings">₹12,500</h3>
+                        <h3 id="totalSavings">₹0</h3>
 
-                        <span class="card-note">
-                            50% of your income
+                        <span class="card-note" id="savingsNote">
+                            Income minus expenses
                         </span>
 
                     </div>
@@ -202,18 +177,16 @@
 
                         <div>
                             <span>AI INSIGHT</span>
-                            <h2>Your financial health looks good</h2>
+                            <h2 id="aiHeadline">Financial Health Summary</h2>
                         </div>
 
                     </div>
 
-                    <p>
-                        Based on your spending pattern, you are saving
-                        around 50% of your income this month. Your food
-                        expenses are slightly higher than usual.
+                    <p id="aiSummaryText">
+                        FinMate AI tracks your income and expenses to keep your finances balanced.
                     </p>
 
-                    <button class="ai-btn">
+                    <button class="ai-btn" onclick="window.location.href='ai-insights.html'">
                         View AI Recommendations →
                     </button>
 
@@ -229,20 +202,20 @@
                             <h2>Monthly Budget</h2>
                         </div>
 
-                        <span class="budget-percent">62%</span>
+                        <span class="budget-percent" id="dashboardBudgetPercent">0%</span>
                     </div>
 
                     <div class="progress">
-                        <div class="progress-fill"></div>
+                        <div class="progress-fill" id="dashboardBudgetProgress" style="width: 0%;"></div>
                     </div>
 
                     <div class="budget-info">
-                        <span>₹12,500 spent</span>
-                        <span>₹20,000 limit</span>
+                        <span id="dashboardSpentText">₹0 spent</span>
+                        <span id="dashboardLimitText">₹0 limit</span>
                     </div>
 
-                    <p class="budget-message">
-                        You have ₹7,500 remaining for this month.
+                    <p class="budget-message" id="dashboardBudgetMessage">
+                        Set a budget to start tracking your spending.
                     </p>
 
                 </div>
@@ -260,68 +233,15 @@
                         <h2>Recent Transactions</h2>
                     </div>
 
-                    <button class="view-btn">
+                    <button class="view-btn" onclick="window.location.href='transactions.html'">
                         View All
                     </button>
 
                 </div>
 
 
-                <div class="transaction-list">
-
-                    <div class="transaction">
-
-                        <div class="transaction-icon food">
-                            🍔
-                        </div>
-
-                        <div class="transaction-name">
-                            <strong>Food & Dining</strong>
-                            <span>Today • 7:30 PM</span>
-                        </div>
-
-                        <strong class="amount expense">
-                            - ₹350
-                        </strong>
-
-                    </div>
-
-
-                    <div class="transaction">
-
-                        <div class="transaction-icon shopping">
-                            🛍️
-                        </div>
-
-                        <div class="transaction-name">
-                            <strong>Shopping</strong>
-                            <span>Yesterday • 4:20 PM</span>
-                        </div>
-
-                        <strong class="amount expense">
-                            - ₹1,200
-                        </strong>
-
-                    </div>
-
-
-                    <div class="transaction">
-
-                        <div class="transaction-icon income">
-                            💰
-                        </div>
-
-                        <div class="transaction-name">
-                            <strong>Monthly Income</strong>
-                            <span>28 Sep • 10:00 AM</span>
-                        </div>
-
-                        <strong class="amount income-text">
-                            + ₹25,000
-                        </strong>
-
-                    </div>
-
+                <div class="transaction-list" id="dashboardRecentTransactions">
+                    <p style="color: #8b94a8; padding: 15px 0;">Loading transactions...</p>
                 </div>
 
             </section>

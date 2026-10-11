@@ -1,4 +1,6 @@
 import os
+from dotenv import load_dotenv
+load_dotenv()
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import mysql.connector
@@ -13,10 +15,10 @@ CORS(app)
 # ==============================
 def get_db_connection():
     connection = mysql.connector.connect(
-        host="localhost",
-        user="root",
+        host=os.getenv("DB_HOST"),
+        user=os.getenv("DB_USER"),
         password=os.getenv("DB_PASSWORD"),
-        database="finmate_db"
+        database=os.getenv("DB_NAME")
     )
     return connection
 
@@ -430,9 +432,38 @@ def add_budget():
             "message": str(e)
         }), 500
 
+# ==============================
+# GET USER BUDGET
+# ==============================
+@app.route("/api/budget/<int:user_id>", methods=["GET"])
+def get_budget(user_id):
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
 
+        cursor.execute(
+            "SELECT * FROM budgets WHERE user_id = %s",
+            (user_id,)
+        )
+
+        budgets = cursor.fetchall()
+        cursor.close()
+        connection.close()
+
+        return jsonify({
+            "status": "success",
+            "budgets": budgets
+        })
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": str(e)
+        }), 500
+    
 # ==============================
 # START FLASK SERVER
 # ==============================
 if __name__ == "__main__":
     app.run(debug=True)
+    

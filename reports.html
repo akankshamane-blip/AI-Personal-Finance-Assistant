@@ -53,6 +53,11 @@
                 Reports
             </a>
 
+            <a href="login.html" id="logoutBtn" style="margin-top: 15px; color: #ff8585;">
+                <span>🚪</span>
+                Logout
+            </a>
+
         </nav>
 
         <div class="sidebar-bottom">
@@ -75,11 +80,11 @@
             </div>
 
             <div class="profile">
-                <div class="profile-circle">A</div>
+                <div class="profile-circle" id="profileAvatar">U</div>
 
                 <div>
-                    <strong>User</strong>
-                    <span>Student</span>
+                    <strong id="profileName">User</strong>
+                    <span id="profileEmail">finance@finmate.ai</span>
                 </div>
             </div>
 
@@ -97,7 +102,7 @@
                 </div>
 
                 <button class="month-btn">
-                    Current Data
+                    Overall Data
                 </button>
 
             </div>
@@ -149,7 +154,7 @@
 
                     <h3 id="reportSavings">₹0</h3>
 
-                    <span class="card-note">
+                    <span class="card-note" id="reportSavingsNote">
                         Income minus expenses
                     </span>
 
@@ -188,6 +193,11 @@
                     </thead>
 
                     <tbody id="reportTable">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #888; padding: 25px;">
+                                Loading report data...
+                            </td>
+                        </tr>
                     </tbody>
 
                 </table>
@@ -209,259 +219,163 @@
 
 
 <script>
+    // User Profile & Logout
+    const user = JSON.parse(localStorage.getItem("loggedInUser"));
+    if (user) {
+        const nameEl = document.getElementById("profileName");
+        const emailEl = document.getElementById("profileEmail");
+        const avatarEl = document.getElementById("profileAvatar");
 
-async function generateReport() {
-
-    const user = JSON.parse(
-        localStorage.getItem("loggedInUser")
-    );
-
-    if (!user) {
-
-        alert("Please login first.");
-        return;
-
+        if (nameEl) nameEl.textContent = user.name;
+        if (emailEl) emailEl.textContent = user.email;
+        if (avatarEl) avatarEl.textContent = user.name.charAt(0).toUpperCase();
     }
 
-
-    const reportTable =
-        document.getElementById("reportTable");
-
-    reportTable.innerHTML = "";
-
-
-    try {
-
-        // Get income and expenses from Flask backend
-        const [incomeResponse, expenseResponse] =
-            await Promise.all([
-
-                fetch(
-                    `http://127.0.0.1:5000/api/income/${user.user_id}`
-                ),
-
-                fetch(
-                    `http://127.0.0.1:5000/api/expenses/${user.user_id}`
-                )
-
-            ]);
-
-
-        const incomeData =
-            await incomeResponse.json();
-
-        const expenseData =
-            await expenseResponse.json();
-
-
-        let totalIncome = 0;
-        let totalExpenses = 0;
-
-
-        // Category names from MySQL
-        const categoryNames = {
-
-            1: "Salary",
-            2: "Business",
-            3: "Other Income",
-
-            4: "Food",
-            5: "Shopping",
-            6: "Transport",
-            7: "Bills",
-            8: "Entertainment",
-            9: "Health",
-            10: "Education",
-            11: "Other Expense"
-
-        };
-
-
-        // ==============================
-        // INCOME
-        // ==============================
-
-        incomeData.income.forEach(function(item) {
-
-            const amount = Number(item.amount);
-
-            totalIncome += amount;
-
-
-            const row =
-                document.createElement("tr");
-
-
-            const formattedDate =
-                new Date(item.income_date)
-                    .toLocaleDateString("en-IN", {
-
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric"
-
-                    });
-
-
-            row.innerHTML = `
-
-                <td>${formattedDate}</td>
-
-                <td>
-                    <span class="income-badge">
-                        Income
-                    </span>
-                </td>
-
-                <td>
-                    ${categoryNames[item.category_id] || "Income"}
-                </td>
-
-                <td class="income-amount">
-                    + ₹${amount.toLocaleString("en-IN")}
-                </td>
-
-                <td>
-                    ${item.description || "—"}
-                </td>
-
-            `;
-
-
-            reportTable.appendChild(row);
-
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", function(e) {
+            e.preventDefault();
+            localStorage.removeItem("loggedInUser");
+            window.location.href = "login.html";
         });
+    }
 
+    const categoryNames = {
+        1: "Salary",
+        2: "Business",
+        3: "Other Income",
+        4: "Food",
+        5: "Shopping",
+        6: "Transport",
+        7: "Bills",
+        8: "Entertainment",
+        9: "Health",
+        10: "Education",
+        11: "Other Expense"
+    };
 
-        // ==============================
-        // EXPENSES
-        // ==============================
-
-        expenseData.expenses.forEach(function(item) {
-
-            const amount = Number(item.amount);
-
-            totalExpenses += amount;
-
-
-            const row =
-                document.createElement("tr");
-
-
-            const formattedDate =
-                new Date(item.expense_date)
-                    .toLocaleDateString("en-IN", {
-
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric"
-
-                    });
-
-
-            row.innerHTML = `
-
-                <td>${formattedDate}</td>
-
-                <td>
-                    <span class="expense-badge">
-                        Expense
-                    </span>
-                </td>
-
-                <td>
-                    ${categoryNames[item.category_id] || "Other Expense"}
-                </td>
-
-                <td class="expense-amount">
-                    - ₹${amount.toLocaleString("en-IN")}
-                </td>
-
-                <td>
-                    ${item.description || "—"}
-                </td>
-
-            `;
-
-
-            reportTable.appendChild(row);
-
-        });
-
-
-        // ==============================
-        // TOTALS
-        // ==============================
-
-        const savings =
-            totalIncome - totalExpenses;
-
-
-        document.getElementById(
-            "reportIncome"
-        ).textContent =
-            "₹" + totalIncome.toLocaleString("en-IN");
-
-
-        document.getElementById(
-            "reportExpenses"
-        ).textContent =
-            "₹" + totalExpenses.toLocaleString("en-IN");
-
-
-        document.getElementById(
-            "reportSavings"
-        ).textContent =
-            "₹" + savings.toLocaleString("en-IN");
-
-
-        // No transactions message
-        if (
-            incomeData.income.length === 0 &&
-            expenseData.expenses.length === 0
-        ) {
-
+    async function generateReport() {
+        if (!user) {
+            const reportTable = document.getElementById("reportTable");
             reportTable.innerHTML = `
-
                 <tr>
-                    <td colspan="5">
-                        No transactions recorded yet.
+                    <td colspan="5" style="text-align: center; padding: 25px;">
+                        Please <a href="login.html" style="color: #6558ee; font-weight: bold;">Login</a> to view financial reports.
                     </td>
                 </tr>
-
             `;
-
+            return;
         }
 
+        const reportTable = document.getElementById("reportTable");
 
+        try {
+            const [incomeResponse, expenseResponse] = await Promise.all([
+                fetch(`http://127.0.0.1:5000/api/income/${user.user_id}`),
+                fetch(`http://127.0.0.1:5000/api/expenses/${user.user_id}`)
+            ]);
+
+            const incomeData = await incomeResponse.json();
+            const expenseData = await expenseResponse.json();
+
+            let totalIncome = 0;
+            let totalExpenses = 0;
+            let allTransactions = [];
+
+            if (incomeData.income && Array.isArray(incomeData.income)) {
+                incomeData.income.forEach(item => {
+                    const amt = Number(item.amount) || 0;
+                    totalIncome += amt;
+                    allTransactions.push({
+                        type: "Income",
+                        categoryId: item.category_id,
+                        amount: amt,
+                        date: item.income_date,
+                        description: item.description
+                    });
+                });
+            }
+
+            if (expenseData.expenses && Array.isArray(expenseData.expenses)) {
+                expenseData.expenses.forEach(item => {
+                    const amt = Number(item.amount) || 0;
+                    totalExpenses += amt;
+                    allTransactions.push({
+                        type: "Expense",
+                        categoryId: item.category_id,
+                        amount: amt,
+                        date: item.expense_date,
+                        description: item.description
+                    });
+                });
+            }
+
+            // Summary numbers
+            const savings = totalIncome - totalExpenses;
+            document.getElementById("reportIncome").textContent = "₹" + totalIncome.toLocaleString("en-IN");
+            document.getElementById("reportExpenses").textContent = "₹" + totalExpenses.toLocaleString("en-IN");
+            document.getElementById("reportSavings").textContent = "₹" + savings.toLocaleString("en-IN");
+
+            // Sort chronologically (newest first)
+            allTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            reportTable.innerHTML = "";
+
+            if (allTransactions.length === 0) {
+                reportTable.innerHTML = `
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: #888; padding: 25px;">
+                            No transactions recorded yet.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            allTransactions.forEach(item => {
+                const row = document.createElement("tr");
+                const formattedDate = new Date(item.date).toLocaleDateString("en-IN", {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric"
+                });
+
+                const catName = categoryNames[item.categoryId] || (item.type === "Income" ? "Other Income" : "Other Expense");
+
+                if (item.type === "Income") {
+                    row.innerHTML = `
+                        <td>${formattedDate}</td>
+                        <td><span class="income-badge">Income</span></td>
+                        <td>${catName}</td>
+                        <td class="income-amount">+ ₹${item.amount.toLocaleString("en-IN")}</td>
+                        <td>${item.description || "—"}</td>
+                    `;
+                } else {
+                    row.innerHTML = `
+                        <td>${formattedDate}</td>
+                        <td><span class="expense-badge">Expense</span></td>
+                        <td>${catName}</td>
+                        <td class="expense-amount">- ₹${item.amount.toLocaleString("en-IN")}</td>
+                        <td>${item.description || "—"}</td>
+                    `;
+                }
+
+                reportTable.appendChild(row);
+            });
+
+        } catch (error) {
+            console.error("Reports backend error:", error);
+            reportTable.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align: center; color: #e04444; padding: 25px;">
+                        Unable to load report data. Please make sure Flask is running.
+                    </td>
+                </tr>
+            `;
+        }
     }
-    catch (error) {
 
-        console.error(
-            "Reports backend error:",
-            error
-        );
-
-
-        reportTable.innerHTML = `
-
-            <tr>
-                <td colspan="5">
-                    Unable to load report data.
-                    Please make sure Flask is running.
-                </td>
-            </tr>
-
-        `;
-
-    }
-
-}
-
-
-// Start report
-generateReport();
-
+    generateReport();
 </script>
 
 </body>

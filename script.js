@@ -1,707 +1,457 @@
 // ======================================
-// FINMATE AI - TRANSACTION SYSTEM
+// FINMATE AI - CENTRAL CLIENT SCRIPT
 // ======================================
 
-// Get saved transactions from browser storage
-let transactions = JSON.parse(localStorage.getItem("transactions")) || [];
+const API_BASE_URL = "http://127.0.0.1:5000/api";
 
+const CATEGORY_NAMES = {
+    1: "Salary",
+    2: "Business",
+    3: "Other Income",
+    4: "Food",
+    5: "Shopping",
+    6: "Transport",
+    7: "Bills",
+    8: "Entertainment",
+    9: "Health",
+    10: "Education",
+    11: "Other Expense"
+};
 
 // ======================================
-// ADD TRANSACTION
+// USER SESSION & AUTH CHECKS
 // ======================================
+function getLoggedInUser() {
+    try {
+        return JSON.parse(localStorage.getItem("loggedInUser"));
+    } catch (e) {
+        return null;
+    }
+}
 
+function initUserProfile() {
+    const user = getLoggedInUser();
+
+    // Populate user profile widgets if elements exist
+    const greetingEl = document.getElementById("welcomeGreeting");
+    const nameEl = document.getElementById("profileName");
+    const emailEl = document.getElementById("profileEmail");
+    const avatarEl = document.getElementById("profileAvatar");
+
+    if (user) {
+        if (greetingEl) greetingEl.textContent = `Welcome back, ${user.name}`;
+        if (nameEl) nameEl.textContent = user.name;
+        if (emailEl) emailEl.textContent = user.email;
+        if (avatarEl) avatarEl.textContent = user.name.charAt(0).toUpperCase();
+    } else {
+        if (greetingEl) greetingEl.textContent = "Welcome, Guest";
+        if (nameEl) nameEl.textContent = "Guest User";
+        if (emailEl) emailEl.textContent = "Please login";
+        if (avatarEl) avatarEl.textContent = "G";
+    }
+
+    // Bind logout button
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+        logoutBtn.addEventListener("click", function (e) {
+            e.preventDefault();
+            localStorage.removeItem("loggedInUser");
+            window.location.href = "login.html";
+        });
+    }
+}
+
+// ======================================
+// TRANSACTIONS PAGE LOGIC
+// ======================================
 const transactionForm = document.getElementById("transactionForm");
 const transactionTable = document.getElementById("transactionTable");
+const typeSelect = document.getElementById("type");
+const categorySelect = document.getElementById("category");
 
+// Filter categories based on Transaction Type
+if (typeSelect && categorySelect) {
+    typeSelect.addEventListener("change", function () {
+        const type = typeSelect.value;
+        const incomeGroup = document.getElementById("incomeOptGroup");
+        const expenseGroup = document.getElementById("expenseOptGroup");
+
+        categorySelect.value = "";
+
+        if (type === "Income") {
+            if (incomeGroup) incomeGroup.style.display = "";
+            if (expenseGroup) expenseGroup.style.display = "none";
+        } else if (type === "Expense") {
+            if (incomeGroup) incomeGroup.style.display = "none";
+            if (expenseGroup) expenseGroup.style.display = "";
+        } else {
+            if (incomeGroup) incomeGroup.style.display = "";
+            if (expenseGroup) expenseGroup.style.display = "";
+        }
+    });
+}
+
+// Add Transaction (Connected to MySQL Flask API)
 if (transactionForm) {
+    // Set default date to today
+    const dateInput = document.getElementById("date");
+    if (dateInput && !dateInput.value) {
+        dateInput.value = new Date().toISOString().split("T")[0];
+    }
 
-    transactionForm.addEventListener("submit", function(event) {
-
+    transactionForm.addEventListener("submit", async function (event) {
         event.preventDefault();
 
-        const type = document.getElementById("type").value;
-        const category = document.getElementById("category").value;
-        const amount = Number(document.getElementById("amount").value);
-        const date = document.getElementById("date").value;
-        const description = document.getElementById("description").value;
+        const user = getLoggedInUser();
+        if (!user) {
+            alert("Please login first to record transactions.");
+            window.location.href = "login.html";
+            return;
+        }
 
-        // Create transaction object
-        const transaction = {
-            type: type,
-            category: category,
+        const type = document.getElementById("type").value;
+        const categoryId = parseInt(document.getElementById("category").value, 10);
+        const amount = parseFloat(document.getElementById("amount").value);
+        const date = document.getElementById("date").value;
+        const description = document.getElementById("description").value.trim();
+
+        if (!type || !categoryId || isNaN(amount) || amount <= 0 || !date) {
+            alert("Please fill in all required fields with valid data.");
+            return;
+        }
+
+        const endpoint = type === "Income" ? `${API_BASE_URL}/income` : `${API_BASE_URL}/expense`;
+        const payload = {
+            user_id: user.user_id,
+            category_id: categoryId,
             amount: amount,
-            date: date,
+            [type === "Income" ? "income_date" : "expense_date"]: date,
             description: description
         };
 
-        // Add transaction to array
-        transactions.push(transaction);
-
-        // Save transactions
-        localStorage.setItem(
-            "transactions",
-            JSON.stringify(transactions)
-        );
-
-        // Show transaction on page
-        addTransactionToTable(transaction);
-
-        // Clear form
-        transactionForm.reset();
-
-        alert("Transaction added successfully!");
-
-    });
-}
-
-
-// ======================================
-// ADD TRANSACTION TO TABLE
-// ======================================
-
-function addTransactionToTable(transaction) {
-
-    if (!transactionTable) return;
-
-    const formattedDate = new Date(
-        transaction.date
-    ).toLocaleDateString("en-IN", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric"
-    });
-
-    const newRow = document.createElement("tr");
-
-    if (transaction.type === "Income") {
-
-        newRow.innerHTML = `
-            <td>${formattedDate}</td>
-
-            <td>
-                <span class="income-badge">
-                    Income
-                </span>
-            </td>
-
-            <td>${transaction.category}</td>
-
-            <td class="income-amount">
-                + ₹${transaction.amount.toLocaleString("en-IN")}
-            </td>
-
-            <td>${transaction.description || "—"}</td>
-        `;
-
-    } else {
-
-        newRow.innerHTML = `
-            <td>${formattedDate}</td>
-
-            <td>
-                <span class="expense-badge">
-                    Expense
-                </span>
-            </td>
-
-            <td>${transaction.category}</td>
-
-            <td class="expense-amount">
-                - ₹${transaction.amount.toLocaleString("en-IN")}
-            </td>
-
-            <td>${transaction.description || "—"}</td>
-        `;
-    }
-
-    transactionTable.prepend(newRow);
-}
-
-
-// ======================================
-// LOAD SAVED TRANSACTIONS
-// ======================================
-
-if (transactionTable) {
-
-    transactions.forEach(function(transaction) {
-        addTransactionToTable(transaction);
-    });
-
-}
-
-
-// ======================================
-// UPDATE DASHBOARD
-// ======================================
-
-function updateDashboard() {
-
-    const incomeElement = document.getElementById("totalIncome");
-    const expenseElement = document.getElementById("totalExpenses");
-    const savingsElement = document.getElementById("totalSavings");
-
-    // If we are not on dashboard, stop
-    if (!incomeElement || !expenseElement || !savingsElement) {
-        return;
-    }
-
-    let totalIncome = 0;
-    let totalExpenses = 0;
-
-    // Calculate totals
-    transactions.forEach(function(transaction) {
-
-        if (transaction.type === "Income") {
-            totalIncome += transaction.amount;
-        }
-
-        if (transaction.type === "Expense") {
-            totalExpenses += transaction.amount;
-        }
-
-    });
-
-    // Calculate savings
-    const totalSavings = totalIncome - totalExpenses;
-
-    // Display values
-    incomeElement.textContent =
-        "₹" + totalIncome.toLocaleString("en-IN");
-
-    expenseElement.textContent =
-        "₹" + totalExpenses.toLocaleString("en-IN");
-
-    savingsElement.textContent =
-        "₹" + totalSavings.toLocaleString("en-IN");
-}
-
-
-// Run dashboard calculation
-updateDashboard();
-// ======================================
-// BUDGET SYSTEM
-// ======================================
-
-const budgetForm = document.getElementById("budgetForm");
-
-let monthlyBudget =
-    Number(localStorage.getItem("monthlyBudget")) || 0;
-
-
-// Save Budget
-if (budgetForm) {
-
-    budgetForm.addEventListener("submit", function(event) {
-
-        event.preventDefault();
-
-        const budgetAmount =
-            Number(document.getElementById("budgetAmount").value);
-
-        monthlyBudget = budgetAmount;
-
-        localStorage.setItem(
-            "monthlyBudget",
-            monthlyBudget
-        );
-
-        updateBudgetPage();
-
-        alert("Monthly budget saved successfully!");
-
-        budgetForm.reset();
-
-    });
-
-}
-
-
-// Calculate total expenses
-function calculateTotalExpenses() {
-
-    let totalExpenses = 0;
-
-    transactions.forEach(function(transaction) {
-
-        if (transaction.type === "Expense") {
-            totalExpenses += transaction.amount;
-        }
-
-    });
-
-    return totalExpenses;
-}
-
-
-// Update Budget Page
-function updateBudgetPage() {
-
-    const budgetTotal =
-        document.getElementById("budgetTotal");
-
-    const budgetSpent =
-        document.getElementById("budgetSpent");
-
-    const budgetRemaining =
-        document.getElementById("budgetRemaining");
-
-    const budgetPercentage =
-        document.getElementById("budgetPercentage");
-
-    const budgetProgress =
-        document.getElementById("budgetProgress");
-
-    const budgetMessage =
-        document.getElementById("budgetMessage");
-
-
-    // If budget page is not open
-    if (!budgetTotal) {
-        return;
-    }
-
-
-    const totalSpent = calculateTotalExpenses();
-
-    const remaining =
-        monthlyBudget - totalSpent;
-
-
-    let percentage = 0;
-
-    if (monthlyBudget > 0) {
-
-        percentage =
-            (totalSpent / monthlyBudget) * 100;
-
-    }
-
-
-    // Don't show more than 100%
-    const progressPercentage =
-        Math.min(percentage, 100);
-
-
-    // Display values
-    budgetTotal.textContent =
-        "₹" + monthlyBudget.toLocaleString("en-IN");
-
-    budgetSpent.textContent =
-        "₹" + totalSpent.toLocaleString("en-IN");
-
-    budgetRemaining.textContent =
-        "₹" + Math.max(remaining, 0).toLocaleString("en-IN");
-
-    budgetPercentage.textContent =
-        percentage.toFixed(1) + "%";
-
-    budgetProgress.style.width =
-        progressPercentage + "%";
-
-
-    // Budget message
-    if (monthlyBudget === 0) {
-
-        budgetMessage.textContent =
-            "Set a budget to start tracking your spending.";
-
-    } else if (percentage < 50) {
-
-        budgetMessage.textContent =
-            "Great! Your spending is currently under control.";
-
-    } else if (percentage < 80) {
-
-        budgetMessage.textContent =
-            "You are getting closer to your monthly budget.";
-
-    } else if (percentage < 100) {
-
-        budgetMessage.textContent =
-            "⚠️ Be careful! You are close to your budget limit.";
-
-    } else {
-
-        budgetMessage.textContent =
-            "⚠️ You have reached or exceeded your monthly budget.";
-
-    }
-
-}
-
-
-// Load budget when page opens
-updateBudgetPage();
-// ======================================
-// AI INSIGHTS SYSTEM
-// ======================================
-
-function generateAIInsights() {
-
-    const healthElement =
-        document.getElementById("financialHealth");
-
-    const summaryElement =
-        document.getElementById("aiSummary");
-
-    const incomeElement =
-        document.getElementById("aiIncome");
-
-    const expenseElement =
-        document.getElementById("aiExpenses");
-
-    const savingRateElement =
-        document.getElementById("aiSavingRate");
-
-    const recommendationsElement =
-        document.getElementById("recommendations");
-
-    const categoryElement =
-        document.getElementById("categoryBreakdown");
-
-
-    // Stop if AI page is not open
-    if (!healthElement) {
-        return;
-    }
-
-
-    // Calculate income and expenses
-    let totalIncome = 0;
-    let totalExpenses = 0;
-
-    let categories = {};
-
-
-    transactions.forEach(function(transaction) {
-
-        if (transaction.type === "Income") {
-
-            totalIncome += transaction.amount;
-
-        } else if (transaction.type === "Expense") {
-
-            totalExpenses += transaction.amount;
-
-            // Category-wise expense
-            if (!categories[transaction.category]) {
-                categories[transaction.category] = 0;
-            }
-
-            categories[transaction.category] += transaction.amount;
-        }
-
-    });
-
-
-    // Calculate savings
-    const savings = totalIncome - totalExpenses;
-
-    // Calculate saving rate
-    let savingRate = 0;
-
-    if (totalIncome > 0) {
-        savingRate = (savings / totalIncome) * 100;
-    }
-
-
-    // Display basic statistics
-    incomeElement.textContent =
-        "₹" + totalIncome.toLocaleString("en-IN");
-
-    expenseElement.textContent =
-        "₹" + totalExpenses.toLocaleString("en-IN");
-
-    savingRateElement.textContent =
-        savingRate.toFixed(1) + "%";
-
-
-    // ==================================
-    // FINANCIAL HEALTH
-    // ==================================
-
-    if (totalIncome === 0) {
-
-        healthElement.textContent =
-            "Add transactions to get your AI analysis.";
-
-        summaryElement.textContent =
-            "FinMate AI needs some income and expense data before it can analyze your financial habits.";
-
-    }
-
-    else if (savingRate >= 30) {
-
-        healthElement.textContent =
-            "Your saving pattern looks strong.";
-
-        summaryElement.textContent =
-            "You are currently saving a healthy portion of your recorded income. Keep monitoring your expenses.";
-
-    }
-
-    else if (savingRate >= 10) {
-
-        healthElement.textContent =
-            "Your finances are fairly balanced.";
-
-        summaryElement.textContent =
-            "You are saving some of your income, but there may be opportunities to improve your monthly savings.";
-
-    }
-
-    else if (savingRate >= 0) {
-
-        healthElement.textContent =
-            "Your expenses are taking most of your income.";
-
-        summaryElement.textContent =
-            "Consider reviewing your largest spending categories and setting limits for discretionary expenses.";
-
-    }
-
-    else {
-
-        healthElement.textContent =
-            "Your expenses are currently higher than your income.";
-
-        summaryElement.textContent =
-            "Review your recent spending and consider reducing non-essential expenses.";
-
-    }
-
-
-    // ==================================
-    // AI RECOMMENDATIONS
-    // ==================================
-
-    recommendationsElement.innerHTML = "";
-
-
-    if (totalIncome === 0) {
-
-        addRecommendation(
-            "💡",
-            "Add your income",
-            "Enter your income transactions so FinMate AI can analyze your financial situation."
-        );
-
-    } else {
-
-        if (savingRate < 20) {
-
-            addRecommendation(
-                "💰",
-                "Focus on increasing savings",
-                "Your current saving rate is below 20%. Review your expenses and identify areas where you can reduce spending."
-            );
-
-        } else {
-
-            addRecommendation(
-                "✨",
-                "Good saving progress",
-                "Your current saving rate is above 20%. Continue tracking your expenses to maintain this habit."
-            );
-
-        }
-
-
-        // Find highest spending category
-        let highestCategory = "";
-        let highestAmount = 0;
-
-        for (let category in categories) {
-
-            if (categories[category] > highestAmount) {
-
-                highestAmount = categories[category];
-                highestCategory = category;
-
-            }
-        }
-
-
-        if (highestCategory !== "") {
-
-            addRecommendation(
-                "📊",
-                highestCategory + " is your highest expense",
-                "You have spent ₹" +
-                highestAmount.toLocaleString("en-IN") +
-                " on " +
-                highestCategory +
-                ". Consider setting a separate limit for this category."
-            );
-
-        }
-
-
-        addRecommendation(
-            "🤖",
-            "Keep tracking your transactions",
-            "Regular transaction tracking helps FinMate AI identify spending patterns and provide better recommendations."
-        );
-
-    }
-
-
-    // ==================================
-    // CATEGORY BREAKDOWN
-    // ==================================
-
-    categoryElement.innerHTML = "";
-
-    const categoryNames =
-        Object.keys(categories);
-
-
-    if (categoryNames.length === 0) {
-
-        categoryElement.innerHTML = `
-            <p class="empty-message">
-                Add expenses to see your category-wise spending.
-            </p>
-        `;
-
-    } else {
-
-        let highestAmount = Math.max(
-            ...Object.values(categories)
-        );
-
-
-        categoryNames
-            .sort(function(a, b) {
-                return categories[b] - categories[a];
-            })
-            .forEach(function(category) {
-
-                const amount = categories[category];
-
-                const percentage =
-                    (amount / highestAmount) * 100;
-
-
-                const item =
-                    document.createElement("div");
-
-                item.className = "category-item";
-
-                item.innerHTML = `
-                    <div class="category-top">
-                        <span class="category-name">
-                            ${category}
-                        </span>
-
-                        <span class="category-amount">
-                            ₹${amount.toLocaleString("en-IN")}
-                        </span>
-                    </div>
-
-                    <div class="category-bar">
-                        <div
-                            class="category-fill"
-                            style="width: ${percentage}%;">
-                        </div>
-                    </div>
-                `;
-
-                categoryElement.appendChild(item);
-
+        const submitBtn = document.getElementById("submitBtn");
+        if (submitBtn) submitBtn.disabled = true;
+
+        try {
+            const response = await fetch(endpoint, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
             });
 
-    }
+            const result = await response.json();
 
+            if (response.ok) {
+                alert(`${type} added successfully!`);
+                transactionForm.reset();
+                if (dateInput) dateInput.value = new Date().toISOString().split("T")[0];
+                await loadTransactionsTable();
+            } else {
+                alert("Error: " + (result.message || "Failed to add transaction."));
+            }
+        } catch (err) {
+            console.error("Add transaction error:", err);
+            alert("Unable to connect to Flask backend. Make sure your server is running.");
+        } finally {
+            if (submitBtn) submitBtn.disabled = false;
+        }
+    });
 }
 
+// Load Transactions Table from Backend
+async function loadTransactionsTable() {
+    if (!transactionTable) return;
 
-// Add AI recommendation
-function addRecommendation(icon, title, message) {
-
-    const recommendationsElement =
-        document.getElementById("recommendations");
-
-    const recommendation =
-        document.createElement("div");
-
-    recommendation.className =
-        "recommendation";
-
-    recommendation.innerHTML = `
-        <span class="recommendation-icon">
-            ${icon}
-        </span>
-
-        <div>
-            <strong>${title}</strong>
-
-            <p>${message}</p>
-        </div>
-    `;
-
-    recommendationsElement.appendChild(
-        recommendation
-    );
-
-}
-
-
-// Run AI analysis
-generateAIInsights();
-// ======================================
-// LOAD DATA FROM BACKEND
-// ======================================
-
-async function loadBackendData() {
-    const user = JSON.parse(localStorage.getItem("loggedInUser"));
-
+    const user = getLoggedInUser();
     if (!user) {
-        console.log("No logged-in user found.");
+        transactionTable.innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align: center; color: #888; padding: 25px;">
+                    Please <a href="login.html" style="color: #6558ee; font-weight: bold;">Login</a> to view your transactions.
+                </td>
+            </tr>
+        `;
         return;
     }
 
     try {
-        const incomeResponse = await fetch(
-            `http://127.0.0.1:5000/api/income/${user.user_id}`
-        );
+        const [incomeRes, expenseRes] = await Promise.all([
+            fetch(`${API_BASE_URL}/income/${user.user_id}`),
+            fetch(`${API_BASE_URL}/expenses/${user.user_id}`)
+        ]);
 
-        const expenseResponse = await fetch(
-            `http://127.0.0.1:5000/api/expenses/${user.user_id}`
-        );
+        const incomeData = await incomeRes.json();
+        const expenseData = await expenseRes.json();
 
-        const incomeData = await incomeResponse.json();
-        const expenseData = await expenseResponse.json();
+        let allTransactions = [];
 
-        let totalIncome = 0;
-        let totalExpenses = 0;
+        if (incomeData.income && Array.isArray(incomeData.income)) {
+            incomeData.income.forEach(item => {
+                allTransactions.push({
+                    type: "Income",
+                    categoryId: item.category_id,
+                    amount: Number(item.amount),
+                    date: item.income_date,
+                    description: item.description
+                });
+            });
+        }
 
-        incomeData.income.forEach(function(item) {
-            totalIncome += Number(item.amount);
+        if (expenseData.expenses && Array.isArray(expenseData.expenses)) {
+            expenseData.expenses.forEach(item => {
+                allTransactions.push({
+                    type: "Expense",
+                    categoryId: item.category_id,
+                    amount: Number(item.amount),
+                    date: item.expense_date,
+                    description: item.description
+                });
+            });
+        }
+
+        // Sort descending by date
+        allTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        transactionTable.innerHTML = "";
+
+        if (allTransactions.length === 0) {
+            transactionTable.innerHTML = `
+                <tr>
+                    <td colspan="5" style="text-align: center; color: #888; padding: 25px;">
+                        No transactions recorded yet. Add one above!
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        allTransactions.forEach(t => {
+            const formattedDate = new Date(t.date).toLocaleDateString("en-IN", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric"
+            });
+            const categoryName = CATEGORY_NAMES[t.categoryId] || (t.type === "Income" ? "Other Income" : "Other Expense");
+            const row = document.createElement("tr");
+
+            if (t.type === "Income") {
+                row.innerHTML = `
+                    <td>${formattedDate}</td>
+                    <td><span class="income-badge">Income</span></td>
+                    <td>${categoryName}</td>
+                    <td class="income-amount">+ ₹${t.amount.toLocaleString("en-IN")}</td>
+                    <td>${t.description || "—"}</td>
+                `;
+            } else {
+                row.innerHTML = `
+                    <td>${formattedDate}</td>
+                    <td><span class="expense-badge">Expense</span></td>
+                    <td>${categoryName}</td>
+                    <td class="expense-amount">- ₹${t.amount.toLocaleString("en-IN")}</td>
+                    <td>${t.description || "—"}</td>
+                `;
+            }
+            transactionTable.appendChild(row);
         });
 
-        expenseData.expenses.forEach(function(item) {
-            totalExpenses += Number(item.amount);
-        });
-
-        const totalSavings = totalIncome - totalExpenses;
-
-        document.getElementById("totalIncome").textContent =
-            "₹" + totalIncome.toLocaleString("en-IN");
-
-        document.getElementById("totalExpenses").textContent =
-            "₹" + totalExpenses.toLocaleString("en-IN");
-
-        document.getElementById("totalSavings").textContent =
-            "₹" + totalSavings.toLocaleString("en-IN");
-
-        console.log("Backend Income:", incomeData);
-        console.log("Backend Expenses:", expenseData);
-
-    } catch (error) {
-        console.error("Backend connection error:", error);
+    } catch (err) {
+        console.error("Load transactions error:", err);
+        transactionTable.innerHTML = `
+            <tr>
+                <td colspan="5" style="text-align: center; color: #e04444; padding: 25px;">
+                    Failed to connect to backend server. Make sure Flask is running.
+                </td>
+            </tr>
+        `;
     }
 }
 
-loadBackendData();
+// ======================================
+// DASHBOARD LOGIC (index.html)
+// ======================================
+async function loadDashboardData() {
+    const totalIncomeEl = document.getElementById("totalIncome");
+    const totalExpensesEl = document.getElementById("totalExpenses");
+    const totalSavingsEl = document.getElementById("totalSavings");
+
+    // Only run if we are on dashboard
+    if (!totalIncomeEl && !totalExpensesEl) return;
+
+    const user = getLoggedInUser();
+    if (!user) {
+        const recentListEl = document.getElementById("dashboardRecentTransactions");
+        if (recentListEl) {
+            recentListEl.innerHTML = `
+                <p style="color: #8b94a8; padding: 15px 0;">
+                    Please <a href="login.html" style="color: #6558ee; font-weight: bold;">Login</a> to load your personal financial data.
+                </p>
+            `;
+        }
+        return;
+    }
+
+    try {
+        const [incomeRes, expenseRes, budgetRes] = await Promise.all([
+            fetch(`${API_BASE_URL}/income/${user.user_id}`),
+            fetch(`${API_BASE_URL}/expenses/${user.user_id}`),
+            fetch(`${API_BASE_URL}/budget/${user.user_id}`)
+        ]);
+
+        const incomeData = await incomeRes.json();
+        const expenseData = await expenseRes.json();
+        const budgetData = await budgetRes.json();
+
+        let totalIncome = 0;
+        let totalExpenses = 0;
+        let allTransactions = [];
+
+        if (incomeData.income && Array.isArray(incomeData.income)) {
+            incomeData.income.forEach(item => {
+                const amt = Number(item.amount) || 0;
+                totalIncome += amt;
+                allTransactions.push({
+                    type: "Income",
+                    categoryId: item.category_id,
+                    amount: amt,
+                    date: item.income_date,
+                    description: item.description
+                });
+            });
+        }
+
+        if (expenseData.expenses && Array.isArray(expenseData.expenses)) {
+            expenseData.expenses.forEach(item => {
+                const amt = Number(item.amount) || 0;
+                totalExpenses += amt;
+                allTransactions.push({
+                    type: "Expense",
+                    categoryId: item.category_id,
+                    amount: amt,
+                    date: item.expense_date,
+                    description: item.description
+                });
+            });
+        }
+
+        const totalSavings = totalIncome - totalExpenses;
+        let savingRate = totalIncome > 0 ? (totalSavings / totalIncome) * 100 : 0;
+
+        // Update Summary Cards
+        if (totalIncomeEl) totalIncomeEl.textContent = "₹" + totalIncome.toLocaleString("en-IN");
+        if (totalExpensesEl) totalExpensesEl.textContent = "₹" + totalExpenses.toLocaleString("en-IN");
+        if (totalSavingsEl) totalSavingsEl.textContent = "₹" + totalSavings.toLocaleString("en-IN");
+
+        const savingRateTag = document.getElementById("savingRateTag");
+        if (savingRateTag) {
+            savingRateTag.textContent = `${savingRate.toFixed(1)}% saved`;
+        }
+
+        // Update AI Insights Summary Card on Dashboard
+        const aiHeadline = document.getElementById("aiHeadline");
+        const aiSummaryText = document.getElementById("aiSummaryText");
+        if (aiHeadline && aiSummaryText) {
+            if (totalIncome === 0 && totalExpenses === 0) {
+                aiHeadline.textContent = "No data recorded yet";
+                aiSummaryText.textContent = "Add your income and expenses to unlock AI-powered financial health insights.";
+            } else if (savingRate >= 30) {
+                aiHeadline.textContent = "Strong Financial Health";
+                aiSummaryText.textContent = `Excellent job! You are saving ${savingRate.toFixed(1)}% of your income. Keep building your wealth!`;
+            } else if (savingRate >= 15) {
+                aiHeadline.textContent = "Moderate Savings Pattern";
+                aiSummaryText.textContent = `You are saving ${savingRate.toFixed(1)}% of your income. Aim to lower discretionary expenses to reach 25%+.`;
+            } else if (savingRate >= 0) {
+                aiHeadline.textContent = "Tight Budget Alert";
+                aiSummaryText.textContent = "Your spending is absorbing nearly all your income. Consider reviewing top spending categories.";
+            } else {
+                aiHeadline.textContent = "Spending Exceeds Income";
+                aiSummaryText.textContent = `Warning: You have spent ₹${Math.abs(totalSavings).toLocaleString("en-IN")} more than your recorded earnings this period.`;
+            }
+        }
+
+        // Update Dashboard Budget Widget
+        const monthlyBudget = (budgetData.budget && Number(budgetData.budget.amount)) || Number(localStorage.getItem("monthlyBudget")) || 0;
+        const budgetPercentEl = document.getElementById("dashboardBudgetPercent");
+        const budgetProgressEl = document.getElementById("dashboardBudgetProgress");
+        const spentTextEl = document.getElementById("dashboardSpentText");
+        const limitTextEl = document.getElementById("dashboardLimitText");
+        const budgetMessageEl = document.getElementById("dashboardBudgetMessage");
+
+        if (spentTextEl) spentTextEl.textContent = `₹${totalExpenses.toLocaleString("en-IN")} spent`;
+        if (limitTextEl) limitTextEl.textContent = `₹${monthlyBudget.toLocaleString("en-IN")} limit`;
+
+        if (monthlyBudget > 0) {
+            const pct = (totalExpenses / monthlyBudget) * 100;
+            if (budgetPercentEl) budgetPercentEl.textContent = `${pct.toFixed(0)}%`;
+            if (budgetProgressEl) budgetProgressEl.style.width = `${Math.min(pct, 100)}%`;
+
+            const remaining = monthlyBudget - totalExpenses;
+            if (budgetMessageEl) {
+                if (remaining >= 0) {
+                    budgetMessageEl.textContent = `You have ₹${remaining.toLocaleString("en-IN")} remaining for this month.`;
+                } else {
+                    budgetMessageEl.textContent = `⚠️ You have exceeded your budget by ₹${Math.abs(remaining).toLocaleString("en-IN")}.`;
+                    if (budgetProgressEl) budgetProgressEl.style.background = "#e04444";
+                }
+            }
+        } else {
+            if (budgetPercentEl) budgetPercentEl.textContent = "0%";
+            if (budgetProgressEl) budgetProgressEl.style.width = "0%";
+            if (budgetMessageEl) budgetMessageEl.textContent = "Set a budget to start tracking your spending.";
+        }
+
+        // Update Recent Transactions on Dashboard
+        const recentListEl = document.getElementById("dashboardRecentTransactions");
+        if (recentListEl) {
+            allTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+            const recent = allTransactions.slice(0, 5);
+
+            if (recent.length === 0) {
+                recentListEl.innerHTML = `
+                    <p style="color: #8b94a8; padding: 15px 0;">
+                        No transactions recorded yet. <a href="transactions.html" style="color: #6558ee; font-weight: bold;">Add Transaction</a>
+                    </p>
+                `;
+            } else {
+                recentListEl.innerHTML = "";
+                recent.forEach(t => {
+                    const icon = t.type === "Income" ? "💰" : (t.categoryId === 4 ? "🍔" : (t.categoryId === 5 ? "🛍️" : "💳"));
+                    const categoryName = CATEGORY_NAMES[t.categoryId] || (t.type === "Income" ? "Income" : "Expense");
+                    const formattedDate = new Date(t.date).toLocaleDateString("en-IN", {
+                        day: "2-digit",
+                        month: "short"
+                    });
+
+                    const itemEl = document.createElement("div");
+                    itemEl.className = "transaction";
+                    itemEl.innerHTML = `
+                        <div class="transaction-icon ${t.type === "Income" ? "income" : "food"}">
+                            ${icon}
+                        </div>
+                        <div class="transaction-name">
+                            <strong>${categoryName}</strong>
+                            <span>${formattedDate}${t.description ? " • " + t.description : ""}</span>
+                        </div>
+                        <strong class="amount ${t.type === "Income" ? "income-text" : "expense"}">
+                            ${t.type === "Income" ? "+" : "-"} ₹${t.amount.toLocaleString("en-IN")}
+                        </strong>
+                    `;
+                    recentListEl.appendChild(itemEl);
+                });
+            }
+        }
+
+    } catch (err) {
+        console.error("Dashboard backend load error:", err);
+    }
+}
+
+// ======================================
+// RUN INITIALIZATIONS
+// ======================================
+document.addEventListener("DOMContentLoaded", function () {
+    initUserProfile();
+    if (transactionTable) {
+        loadTransactionsTable();
+    }
+    loadDashboardData();
+});

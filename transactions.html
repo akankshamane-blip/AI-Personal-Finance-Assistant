@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinMate AI - Transactions</title>
+    <title>FinMate AI - Income & Expenses</title>
 
     <link rel="stylesheet" href="style.css">
 </head>
@@ -16,17 +16,49 @@
         <aside class="sidebar">
 
             <div class="logo">
-                <h2>FinMate <span>AI</span></h2>
-                <p>Personal Finance Assistant</p>
+                <div class="logo-icon">✦</div>
+                <div>
+                    <h2>FinMate</h2>
+                    <span>AI Finance Assistant</span>
+                </div>
             </div>
 
-            <nav>
-                <a href="index.html">🏠 Dashboard</a>
-                <a href="transactions.html" class="active">💰 Income & Expenses</a>
-                <a href="#">📊 Budget</a>
-                <a href="#">🤖 AI Insights</a>
-                <a href="#">📈 Reports</a>
+            <nav class="menu">
+                <a href="index.html">
+                    <span>⌂</span>
+                    Dashboard
+                </a>
+
+                <a href="transactions.html" class="active">
+                    <span>↗</span>
+                    Income & Expenses
+                </a>
+
+                <a href="budget.html">
+                    <span>◫</span>
+                    Budget
+                </a>
+
+                <a href="ai-insights.html">
+                    <span>✦</span>
+                    AI Insights
+                </a>
+
+                <a href="reports.html">
+                    <span>▤</span>
+                    Reports
+                </a>
+
+                <a href="login.html" id="logoutBtn" style="margin-top: 15px; color: #ff8585;">
+                    <span>🚪</span>
+                    Logout
+                </a>
             </nav>
+
+            <div class="sidebar-bottom">
+                <p>AI-powered</p>
+                <strong>Smart money decisions.</strong>
+            </div>
 
         </aside>
 
@@ -42,8 +74,11 @@
                 </div>
 
                 <div class="profile">
-                    <div class="profile-circle">U</div>
-                    <span>User</span>
+                    <div class="profile-circle" id="profileAvatar">U</div>
+                    <div>
+                        <strong id="profileName">User</strong>
+                        <span id="profileEmail">finance@finmate.ai</span>
+                    </div>
                 </div>
             </div>
 
@@ -61,7 +96,7 @@
                     <div class="form-row">
 
                         <div class="form-group">
-                            <label>Transaction Type</label>
+                            <label for="type">Transaction Type</label>
 
                             <select id="type" required>
                                 <option value="">Select Type</option>
@@ -72,20 +107,25 @@
 
 
                         <div class="form-group">
-                            <label>Category</label>
+                            <label for="category">Category</label>
 
                             <select id="category" required>
                                 <option value="">Select Category</option>
-                                <option>Salary</option>
-                                <option>Scholarship</option>
-                                <option>Freelancing</option>
-                                <option>Food</option>
-                                <option>Shopping</option>
-                                <option>Travel</option>
-                                <option>Education</option>
-                                <option>Bills</option>
-                                <option>Entertainment</option>
-                                <option>Other</option>
+                                <optgroup label="Income" id="incomeOptGroup">
+                                    <option value="1">Salary</option>
+                                    <option value="2">Business</option>
+                                    <option value="3">Other Income</option>
+                                </optgroup>
+                                <optgroup label="Expense" id="expenseOptGroup">
+                                    <option value="4">Food</option>
+                                    <option value="5">Shopping</option>
+                                    <option value="6">Transport</option>
+                                    <option value="7">Bills</option>
+                                    <option value="8">Entertainment</option>
+                                    <option value="9">Health</option>
+                                    <option value="10">Education</option>
+                                    <option value="11">Other Expense</option>
+                                </optgroup>
                             </select>
                         </div>
 
@@ -95,20 +135,21 @@
                     <div class="form-row">
 
                         <div class="form-group">
-                            <label>Amount (₹)</label>
+                            <label for="amount">Amount (₹)</label>
 
                             <input
                                 type="number"
                                 id="amount"
                                 placeholder="Enter amount"
                                 min="1"
+                                step="any"
                                 required
                             >
                         </div>
 
 
                         <div class="form-group">
-                            <label>Date</label>
+                            <label for="date">Date</label>
 
                             <input
                                 type="date"
@@ -121,7 +162,7 @@
 
 
                     <div class="form-group">
-                        <label>Description</label>
+                        <label for="description">Description</label>
 
                         <input
                             type="text"
@@ -131,7 +172,7 @@
                     </div>
 
 
-                    <button type="submit" class="add-transaction-btn">
+                    <button type="submit" class="add-transaction-btn" id="submitBtn">
                         + Add Transaction
                     </button>
 
@@ -145,8 +186,8 @@
 
                 <div class="section-header">
                     <div>
-                        <h2>Recent Transactions</h2>
-                        <p>Track your income and spending.</p>
+                        <h2>Transaction History</h2>
+                        <p>Track your recorded income and spending.</p>
                     </div>
                 </div>
 
@@ -166,44 +207,11 @@
                         </thead>
 
                         <tbody id="transactionTable">
-
                             <tr>
-                                <td>30 Sep 2026</td>
-
-                                <td>
-                                    <span class="income-badge">
-                                        Income
-                                    </span>
+                                <td colspan="5" style="text-align: center; color: #888;">
+                                    Loading transactions...
                                 </td>
-
-                                <td>Salary</td>
-
-                                <td class="income-amount">
-                                    + ₹25,000
-                                </td>
-
-                                <td>Monthly income</td>
                             </tr>
-
-
-                            <tr>
-                                <td>29 Sep 2026</td>
-
-                                <td>
-                                    <span class="expense-badge">
-                                        Expense
-                                    </span>
-                                </td>
-
-                                <td>Food</td>
-
-                                <td class="expense-amount">
-                                    - ₹500
-                                </td>
-
-                                <td>Lunch</td>
-                            </tr>
-
                         </tbody>
 
                     </table>

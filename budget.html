@@ -3,412 +3,309 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FinMate AI - Budget</title>
+    <title>FinMate AI - Monthly Budget</title>
 
     <link rel="stylesheet" href="style.css">
-
-    <style>
-        .budget-container {
-            padding: 30px;
-        }
-
-        .budget-box {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        }
-
-        .budget-box h2 {
-            margin-bottom: 10px;
-        }
-
-        .budget-form {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            margin-top: 20px;
-        }
-
-        .budget-form input {
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            width: 250px;
-        }
-
-        .budget-form button {
-            padding: 12px 25px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            background: #6c63ff;
-            color: white;
-            font-size: 16px;
-        }
-
-        .budget-form button:hover {
-            opacity: 0.9;
-        }
-
-        .budget-cards {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
-
-        .budget-card {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        }
-
-        .budget-card h3 {
-            margin-bottom: 10px;
-            color: #666;
-        }
-
-        .budget-card p {
-            font-size: 25px;
-            font-weight: bold;
-        }
-
-        .progress-box {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            margin-top: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 18px;
-            background: #eee;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-top: 15px;
-        }
-
-        #progressFill {
-            height: 100%;
-            width: 0%;
-            background: #6c63ff;
-            transition: width 0.4s;
-        }
-
-        #budgetMessage {
-            margin-top: 15px;
-            font-weight: 600;
-        }
-
-        @media (max-width: 800px) {
-            .budget-cards {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
 </head>
 
 <body>
 
-    <div class="budget-container">
+    <div class="dashboard">
 
-        <h1>Budget</h1>
-        <p>Set and manage your monthly budget with FinMate AI.</p>
+        <!-- Sidebar -->
+        <aside class="sidebar">
 
-        <div class="budget-box">
-            <h2>Set Monthly Budget</h2>
-
-            <form id="budgetForm" class="budget-form">
-
-                <input
-                    type="number"
-                    id="budgetAmount"
-                    placeholder="Example: 40000"
-                    min="1"
-                    required
-                >
-
-                <button type="submit">
-                    Save Budget
-                </button>
-
-            </form>
-        </div>
-
-
-        <div class="budget-cards">
-
-            <div class="budget-card">
-                <h3>Monthly Budget</h3>
-                <p id="totalBudget">₹0</p>
+            <div class="logo">
+                <div class="logo-icon">✦</div>
+                <div>
+                    <h2>FinMate</h2>
+                    <span>AI Finance Assistant</span>
+                </div>
             </div>
 
-            <div class="budget-card">
-                <h3>Total Spent</h3>
-                <p id="totalSpent">₹0</p>
+            <nav class="menu">
+                <a href="index.html">
+                    <span>⌂</span>
+                    Dashboard
+                </a>
+
+                <a href="transactions.html">
+                    <span>↗</span>
+                    Income & Expenses
+                </a>
+
+                <a href="budget.html" class="active">
+                    <span>◫</span>
+                    Budget
+                </a>
+
+                <a href="ai-insights.html">
+                    <span>✦</span>
+                    AI Insights
+                </a>
+
+                <a href="reports.html">
+                    <span>▤</span>
+                    Reports
+                </a>
+
+                <a href="login.html" id="logoutBtn" style="margin-top: 15px; color: #ff8585;">
+                    <span>🚪</span>
+                    Logout
+                </a>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <p>AI-powered</p>
+                <strong>Smart money decisions.</strong>
             </div>
 
-            <div class="budget-card">
-                <h3>Remaining</h3>
-                <p id="remainingBudget">₹0</p>
+        </aside>
+
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Top Bar -->
+            <div class="topbar">
+                <div>
+                    <h1>Monthly Budget</h1>
+                    <p>Set spending targets and stay within your financial limits.</p>
+                </div>
+
+                <div class="profile">
+                    <div class="profile-circle" id="profileAvatar">U</div>
+                    <div>
+                        <strong id="profileName">User</strong>
+                        <span id="profileEmail">finance@finmate.ai</span>
+                    </div>
+                </div>
             </div>
 
-        </div>
+
+            <!-- Set Budget Form Card -->
+            <section class="budget-form-card">
+                <h2>Set Monthly Budget</h2>
+                <p class="section-subtitle">
+                    Enter your planned monthly spending limit.
+                </p>
+
+                <form id="budgetForm">
+                    <div class="budget-input-group">
+                        <label for="budgetAmount">Monthly Budget Limit (₹)</label>
+                        <input
+                            type="number"
+                            id="budgetAmount"
+                            placeholder="Example: 20000"
+                            min="1"
+                            step="any"
+                            required
+                        >
+                    </div>
+
+                    <button type="submit" class="add-transaction-btn">
+                        Save Budget Limit
+                    </button>
+                </form>
+            </section>
 
 
-        <div class="progress-box">
+            <!-- Budget Summary Cards -->
+            <div class="budget-summary">
 
-            <h2>Budget Usage</h2>
+                <div class="budget-summary-card">
+                    <span class="summary-label">MONTHLY BUDGET</span>
+                    <h2 id="totalBudget">₹0</h2>
+                </div>
 
-            <div class="progress-bar">
-                <div id="progressFill"></div>
+                <div class="budget-summary-card">
+                    <span class="summary-label">TOTAL SPENT</span>
+                    <h2 id="totalSpent">₹0</h2>
+                </div>
+
+                <div class="budget-summary-card">
+                    <span class="summary-label">REMAINING</span>
+                    <h2 id="remainingBudget">₹0</h2>
+                </div>
+
             </div>
 
-            <p id="budgetMessage">
-                Set your monthly budget to start tracking.
-            </p>
 
-        </div>
+            <!-- Progress Card -->
+            <section class="budget-progress-card">
+                <h2>Budget Utilization</h2>
+                <div class="progress">
+                    <div class="progress-fill" id="progressFill" style="width: 0%;"></div>
+                </div>
+
+                <p class="budget-message" id="budgetMessage">
+                    Set your monthly budget to start tracking your spending.
+                </p>
+            </section>
+
+        </main>
 
     </div>
 
 
-<script>
+    <script>
+        // Setup User Info & Logout
+        const user = JSON.parse(localStorage.getItem("loggedInUser"));
+        if (user) {
+            const nameEl = document.getElementById("profileName");
+            const emailEl = document.getElementById("profileEmail");
+            const avatarEl = document.getElementById("profileAvatar");
 
-const budgetForm = document.getElementById("budgetForm");
+            if (nameEl) nameEl.textContent = user.name;
+            if (emailEl) emailEl.textContent = user.email;
+            if (avatarEl) avatarEl.textContent = user.name.charAt(0).toUpperCase();
+        }
 
-
-// ======================================
-// LOAD CURRENT EXPENSES
-// ======================================
-
-async function getExpenses() {
-
-    const user = JSON.parse(localStorage.getItem("loggedInUser"));
-
-    if (!user) {
-        console.log("No logged-in user found.");
-        return 0;
-    }
-
-    try {
-
-        const response = await fetch(
-            `http://127.0.0.1:5000/api/expenses/${user.user_id}`
-        );
-
-        const data = await response.json();
-
-        let totalExpenses = 0;
-
-        if (data.expenses) {
-
-            data.expenses.forEach(function(item) {
-
-                totalExpenses += Number(item.amount);
-
+        const logoutBtn = document.getElementById("logoutBtn");
+        if (logoutBtn) {
+            logoutBtn.addEventListener("click", function(e) {
+                e.preventDefault();
+                localStorage.removeItem("loggedInUser");
+                window.location.href = "login.html";
             });
-
         }
 
-        return totalExpenses;
+        const budgetForm = document.getElementById("budgetForm");
 
-    } catch (error) {
-
-        console.error("Expense loading error:", error);
-
-        return 0;
-    }
-}
-
-
-// ======================================
-// DISPLAY BUDGET
-// ======================================
-
-async function updateBudgetDisplay() {
-
-    const budget = Number(
-        localStorage.getItem("monthlyBudget") || 0
-    );
-
-    const spent = await getExpenses();
-
-    const remaining = budget - spent;
-
-    document.getElementById("totalBudget").textContent =
-        "₹" + budget.toLocaleString("en-IN");
-
-    document.getElementById("totalSpent").textContent =
-        "₹" + spent.toLocaleString("en-IN");
-
-    document.getElementById("remainingBudget").textContent =
-        "₹" + remaining.toLocaleString("en-IN");
-
-
-    let percentage = 0;
-
-    if (budget > 0) {
-
-        percentage = (spent / budget) * 100;
-
-        if (percentage > 100) {
-            percentage = 100;
-        }
-
-    }
-
-    document.getElementById("progressFill").style.width =
-        percentage + "%";
-
-
-    const message =
-        document.getElementById("budgetMessage");
-
-
-    if (budget === 0) {
-
-        message.textContent =
-            "Set your monthly budget to start tracking.";
-
-    }
-    else if (spent > budget) {
-
-        message.textContent =
-            "⚠️ You have exceeded your monthly budget.";
-
-    }
-    else if (spent >= budget * 0.8) {
-
-        message.textContent =
-            "⚠️ You are close to your monthly budget.";
-
-    }
-    else {
-
-        message.textContent =
-            "✅ You are within your monthly budget.";
-
-    }
-
-}
-
-
-// ======================================
-// SAVE BUDGET TO BACKEND
-// ======================================
-
-budgetForm.addEventListener("submit", async function(event) {
-
-    event.preventDefault();
-
-    const amount =
-        Number(document.getElementById("budgetAmount").value);
-
-    const user =
-        JSON.parse(localStorage.getItem("loggedInUser"));
-
-
-    if (!user) {
-
-        alert("Please login first.");
-
-        return;
-    }
-
-
-    if (!amount || amount <= 0) {
-
-        alert("Please enter a valid budget amount.");
-
-        return;
-    }
-
-
-    const today = new Date();
-
-    const month =
-        today.getFullYear() +
-        "-" +
-        String(today.getMonth() + 1).padStart(2, "0");
-
-
-    try {
-
-        const response = await fetch(
-            "http://127.0.0.1:5000/api/budget",
-            {
-                method: "POST",
-
-                headers: {
-                    "Content-Type": "application/json"
-                },
-
-                body: JSON.stringify({
-
-                    user_id: user.user_id,
-
-                    amount: amount,
-
-                    month_year: month
-
-                })
+        // Fetch Expenses from Backend
+        async function getExpenses(userId) {
+            try {
+                const response = await fetch(`http://127.0.0.1:5000/api/expenses/${userId}`);
+                const data = await response.json();
+                let total = 0;
+                if (data.expenses && Array.isArray(data.expenses)) {
+                    data.expenses.forEach(item => {
+                        total += Number(item.amount) || 0;
+                    });
+                }
+                return total;
+            } catch (err) {
+                console.error("Error fetching expenses:", err);
+                return 0;
             }
-        );
-
-
-        const data = await response.json();
-
-
-        if (response.ok) {
-
-            localStorage.setItem(
-                "monthlyBudget",
-                amount
-            );
-
-            alert("Budget saved successfully!");
-
-            document.getElementById("budgetAmount").value = "";
-
-            updateBudgetDisplay();
-
-        }
-        else {
-
-            alert(
-                "Error: " +
-                (data.message || "Unable to save budget.")
-            );
-
         }
 
-    }
-    catch (error) {
+        // Fetch Saved Budget from Backend
+        async function getSavedBudget(userId) {
+            try {
+                const response = await fetch(`http://127.0.0.1:5000/api/budget/${userId}`);
+                const data = await response.json();
+                if (data.budget && data.budget.amount) {
+                    const amt = Number(data.budget.amount);
+                    localStorage.setItem("monthlyBudget", amt);
+                    return amt;
+                }
+            } catch (err) {
+                console.error("Error fetching budget from backend:", err);
+            }
+            return Number(localStorage.getItem("monthlyBudget")) || 0;
+        }
 
-        console.error(error);
+        // Update Display
+        async function updateBudgetDisplay() {
+            if (!user) {
+                document.getElementById("budgetMessage").textContent =
+                    "Please login to track your budget.";
+                return;
+            }
 
-        alert(
-            "Backend connection failed. Make sure Flask is running."
-        );
+            const [budget, spent] = await Promise.all([
+                getSavedBudget(user.user_id),
+                getExpenses(user.user_id)
+            ]);
 
-    }
+            const remaining = budget - spent;
 
-});
+            document.getElementById("totalBudget").textContent =
+                "₹" + budget.toLocaleString("en-IN");
+            document.getElementById("totalSpent").textContent =
+                "₹" + spent.toLocaleString("en-IN");
+            document.getElementById("remainingBudget").textContent =
+                "₹" + Math.max(remaining, 0).toLocaleString("en-IN");
 
+            let percentage = 0;
+            if (budget > 0) {
+                percentage = (spent / budget) * 100;
+            }
 
-// ======================================
-// START
-// ======================================
+            const progressEl = document.getElementById("progressFill");
+            progressEl.style.width = Math.min(percentage, 100) + "%";
 
-updateBudgetDisplay();
+            const msgEl = document.getElementById("budgetMessage");
+            if (budget === 0) {
+                msgEl.textContent = "Set your monthly budget to start tracking your spending.";
+                msgEl.style.color = "#666";
+            } else if (spent > budget) {
+                msgEl.textContent = `⚠️ You have exceeded your budget by ₹${(spent - budget).toLocaleString("en-IN")} (${percentage.toFixed(1)}% spent).`;
+                msgEl.style.color = "#e04444";
+                progressEl.style.background = "#e04444";
+            } else if (spent >= budget * 0.8) {
+                msgEl.textContent = `⚠️ Warning: You have used ${percentage.toFixed(1)}% of your budget limit.`;
+                msgEl.style.color = "#f39c12";
+                progressEl.style.background = "#f39c12";
+            } else {
+                msgEl.textContent = `✅ Great! You have spent ${percentage.toFixed(1)}% of your monthly budget.`;
+                msgEl.style.color = "#159447";
+                progressEl.style.background = "linear-gradient(90deg, #7567ff, #4e9cff)";
+            }
+        }
 
-</script>
+        // Save Budget
+        if (budgetForm) {
+            budgetForm.addEventListener("submit", async function(e) {
+                e.preventDefault();
+
+                if (!user) {
+                    alert("Please login first.");
+                    window.location.href = "login.html";
+                    return;
+                }
+
+                const amount = Number(document.getElementById("budgetAmount").value);
+                if (!amount || amount <= 0) {
+                    alert("Please enter a valid budget amount.");
+                    return;
+                }
+
+                const today = new Date();
+                const month = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0");
+
+                try {
+                    const response = await fetch("http://127.0.0.1:5000/api/budget", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            user_id: user.user_id,
+                            amount: amount,
+                            month_year: month
+                        })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        localStorage.setItem("monthlyBudget", amount);
+                        alert("Monthly budget saved successfully!");
+                        document.getElementById("budgetAmount").value = "";
+                        await updateBudgetDisplay();
+                    } else {
+                        alert("Error: " + (data.message || "Unable to save budget."));
+                    }
+                } catch (err) {
+                    console.error("Save budget error:", err);
+                    alert("Backend connection failed. Make sure Flask server is running.");
+                }
+            });
+        }
+
+        // Initialize display
+        updateBudgetDisplay();
+    </script>
 
 </body>
 </html>
