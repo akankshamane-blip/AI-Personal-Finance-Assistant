@@ -2,7 +2,7 @@
 // FINMATE AI - CENTRAL CLIENT SCRIPT
 // ======================================
 
-const API_BASE_URL = "http://127.0.0.1:5000/api";
+const API_BASE_URL = "https://ai-personal-finance-assistant-sc58.onrender.com/api";
 
 const CATEGORY_NAMES = {
     1: "Salary",
